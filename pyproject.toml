@@ -1,0 +1,11 @@
+[project]
+name = "pocket_api"
+authors = [{ name = "woodenEasy", email = "2314998529@qq.com" }]
+description = "宝可梦后端api"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pocket_api.__version__" }
