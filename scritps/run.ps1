@@ -1,1 +1,1 @@
-python -m pocket_api.main runserver
+python -m pocket_api.manager runserver
