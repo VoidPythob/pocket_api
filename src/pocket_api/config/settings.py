@@ -65,3 +65,6 @@ MIGRATION_MODULES = {
     "contenttypes": None,
     "sessions": None,
 }
+
+
+ALLOWED_HOSTS = ["frp-say.com"]

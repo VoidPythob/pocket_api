@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from django.shortcuts import get_object_or_404
@@ -11,14 +13,26 @@ from pocket_api.models import PetRance, PetsPetRance
 from pocket_api.result import Result
 from pocket_api.serializers import AdminPetRanceSerializer
 
+from .pagination import build_paginated_result
+
 
 class AdminPetRanceView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request: Request, *args: Any, **kwargs: Any):
+        pk = kwargs.get("pk")
+        if pk is not None:
+            rance = self._get_active_rance(pk)
+            serializer = AdminPetRanceSerializer(rance)
+            return Result.success(data=serializer.data, msg="查询成功").to_response()
+
         queryset = PetRance.objects.filter(is_delete=0).order_by("-id")
-        serializer = AdminPetRanceSerializer(queryset, many=True)
-        return Result.success(data=serializer.data, msg="查询成功").to_response()
+        return build_paginated_result(
+            request=request,
+            queryset=queryset,
+            serializer_class=AdminPetRanceSerializer,
+            msg="查询成功",
+        )
 
     def post(self, request: Request, *args: Any, **kwargs: Any):
         serializer = AdminPetRanceSerializer(
@@ -28,7 +42,8 @@ class AdminPetRanceView(APIView):
         serializer.is_valid(raise_exception=True)
         rance = serializer.save()
         return Result.created(
-            data=AdminPetRanceSerializer(rance).data, msg="创建成功"
+            data=AdminPetRanceSerializer(rance).data,
+            msg="创建成功",
         ).to_response()
 
     def put(self, request: Request, *args: Any, **kwargs: Any):
@@ -50,7 +65,8 @@ class AdminPetRanceView(APIView):
         rance.modified_at = timezone.now()
         rance.save(update_fields=["is_delete", "modified_by", "modified_at"])
         return Result.success(
-            data=AdminPetRanceSerializer(rance).data, msg="删除成功"
+            data=AdminPetRanceSerializer(rance).data,
+            msg="删除成功",
         ).to_response()
 
     def _update(
@@ -66,7 +82,8 @@ class AdminPetRanceView(APIView):
         serializer.is_valid(raise_exception=True)
         rance = serializer.save()
         return Result.success(
-            data=AdminPetRanceSerializer(rance).data, msg="修改成功"
+            data=AdminPetRanceSerializer(rance).data,
+            msg="修改成功",
         ).to_response()
 
     @staticmethod

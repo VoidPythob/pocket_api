@@ -32,14 +32,14 @@ class AdminPetSkillView(APIView):
         if pk is not None:
             skill = get_object_or_404(PetSkill, pk=pk)
             serializer = AdminPetSkillSerializer(skill)
-            return Result.success(data=serializer.data, msg="查询成功").to_response()
+            return Result.success(data=serializer.data, msg="success").to_response()
 
         queryset = PetSkill.objects.all().order_by("-id")
         return build_paginated_result(
             request=request,
             queryset=queryset,
             serializer_class=AdminPetSkillSerializer,
-            msg="查询成功",
+            msg="success",
         )
 
     def post(self, request: Request, *args: Any, **kwargs: Any):
@@ -51,7 +51,7 @@ class AdminPetSkillView(APIView):
         skill = serializer.save()
         return Result.created(
             data=AdminPetSkillSerializer(skill).data,
-            msg="创建成功",
+            msg="created",
         ).to_response()
 
     def put(self, request: Request, *args: Any, **kwargs: Any):
@@ -65,22 +65,22 @@ class AdminPetSkillView(APIView):
         if PetsPetSkill.objects.filter(skill_id=skill.id).exists():
             return Result.from_code(
                 ResponseCode.CONFLICT,
-                msg="该技能已被宠物关联，不能删除",
+                msg="skill is referenced by pets",
             ).to_response()
         if PetSkillAttribute.objects.filter(pet_skill_id=skill.id).exists():
             return Result.from_code(
                 ResponseCode.CONFLICT,
-                msg="该技能存在属性关联，不能删除",
+                msg="skill has attribute relations",
             ).to_response()
         if PetSkillAffected.objects.filter(pet_skill_id=skill.id).exists():
             return Result.from_code(
                 ResponseCode.CONFLICT,
-                msg="该技能存在受影响配置，不能删除",
+                msg="skill has affected config",
             ).to_response()
 
         data = AdminPetSkillSerializer(skill).data
         skill.delete()
-        return Result.success(data=data, msg="删除成功").to_response()
+        return Result.success(data=data, msg="deleted").to_response()
 
     def _update(
         self, request: Request, *args: Any, partial: bool = False, **kwargs: Any
@@ -96,7 +96,7 @@ class AdminPetSkillView(APIView):
         skill = serializer.save()
         return Result.success(
             data=AdminPetSkillSerializer(skill).data,
-            msg="修改成功",
+            msg="updated",
         ).to_response()
 
 
@@ -108,11 +108,11 @@ class AdminPetSkillCategoryView(APIView):
         if pk is not None:
             category = get_object_or_404(PetSkillCategory, pk=pk)
             serializer = AdminPetSkillCategorySerializer(category)
-            return Result.success(data=serializer.data, msg="查询成功").to_response()
+            return Result.success(data=serializer.data, msg="success").to_response()
 
         queryset = PetSkillCategory.objects.all().order_by("-id")
         serializer = AdminPetSkillCategorySerializer(queryset, many=True)
-        return Result.success(data=serializer.data, msg="查询成功").to_response()
+        return Result.success(data=serializer.data, msg="success").to_response()
 
     def post(self, request: Request, *args: Any, **kwargs: Any):
         serializer = AdminPetSkillCategorySerializer(
@@ -123,7 +123,7 @@ class AdminPetSkillCategoryView(APIView):
         category = serializer.save()
         return Result.created(
             data=AdminPetSkillCategorySerializer(category).data,
-            msg="创建成功",
+            msg="created",
         ).to_response()
 
     def put(self, request: Request, *args: Any, **kwargs: Any):
@@ -137,12 +137,12 @@ class AdminPetSkillCategoryView(APIView):
         if PetSkill.objects.filter(category_id=category.id).exists():
             return Result.from_code(
                 ResponseCode.CONFLICT,
-                msg="该技能分类已被技能关联，不能删除",
+                msg="skill category is referenced by skills",
             ).to_response()
 
         data = AdminPetSkillCategorySerializer(category).data
         category.delete()
-        return Result.success(data=data, msg="删除成功").to_response()
+        return Result.success(data=data, msg="deleted").to_response()
 
     def _update(
         self, request: Request, *args: Any, partial: bool = False, **kwargs: Any
@@ -158,5 +158,5 @@ class AdminPetSkillCategoryView(APIView):
         category = serializer.save()
         return Result.success(
             data=AdminPetSkillCategorySerializer(category).data,
-            msg="修改成功",
+            msg="updated",
         ).to_response()
