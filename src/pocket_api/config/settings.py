@@ -49,7 +49,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "EXCEPTION_HANDLER": "pocket_api.result.result_exception_handler",
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "pocket_api.pagination.CustomPageNumberPagination",
     "PAGE_SIZE": 10,  # 每页 10 条
 }
 

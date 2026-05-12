@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 
+from pocket_api.pagination import CustomPageNumberPagination
 from pocket_api.result import Result
 
 
@@ -13,7 +13,7 @@ def build_paginated_result(
     serializer_class,
     msg: str = "查询成功",
 ):
-    paginator = PageNumberPagination()
+    paginator = CustomPageNumberPagination()
     page = paginator.paginate_queryset(queryset, request)
     if page is not None:
         serializer = serializer_class(page, many=True)

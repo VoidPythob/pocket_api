@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from pocket_api.models import PetEggGroup, Pets, PetsEggGroup
+from pocket_api.pagination import CustomPageNumberPagination
 from pocket_api.result import Result
 from pocket_api.serializers import PetEggGroupPayloadSerializer, PetListItemSerializer
 from .pet_payloads import build_pet_list_payload
@@ -54,9 +55,7 @@ class EggGroupPetsView(APIView):
         )
         queryset = Pets.objects.filter(id__in=pet_ids).order_by("-id")
 
-        from rest_framework.pagination import PageNumberPagination
-
-        paginator = PageNumberPagination()
+        paginator = CustomPageNumberPagination()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
             serializer = PetListItemSerializer(build_pet_list_payload(page), many=True)

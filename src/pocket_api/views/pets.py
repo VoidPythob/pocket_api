@@ -5,7 +5,6 @@ from typing import Any
 from django.db import models
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
@@ -27,6 +26,7 @@ from pocket_api.models import (
     PetsTag,
     Tag,
 )
+from pocket_api.pagination import CustomPageNumberPagination
 from pocket_api.result import Result
 from pocket_api.serializers import (
     PetCaptureMethodPayloadSerializer,
@@ -253,7 +253,7 @@ class PetFeaturesView(APIView):
                 if relation.feature_id in feature_map
             ],
         }
-        paginator = PageNumberPagination()
+        paginator = CustomPageNumberPagination()
         page = paginator.paginate_queryset(data["features"], request)
         if page is not None:
             serializer = PetFeaturePayloadSerializer(page, many=True)
@@ -299,7 +299,7 @@ class PetCaptureMethodsView(APIView):
                 for method in methods
             ],
         }
-        paginator = PageNumberPagination()
+        paginator = CustomPageNumberPagination()
         page = paginator.paginate_queryset(data["capture_methods"], request)
         if page is not None:
             serializer = PetCaptureMethodPayloadSerializer(page, many=True)
@@ -340,7 +340,7 @@ class PetFeatureListView(APIView):
         if name:
             queryset = queryset.filter(introduction__icontains=name)
 
-        paginator = PageNumberPagination()
+        paginator = CustomPageNumberPagination()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
             serializer = PetFeaturePayloadSerializer(page, many=True)
