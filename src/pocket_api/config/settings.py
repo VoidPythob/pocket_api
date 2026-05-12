@@ -67,4 +67,4 @@ MIGRATION_MODULES = {
 }
 
 
-ALLOWED_HOSTS = ["frp-say.com"]
+ALLOWED_HOSTS = ["127.0.0.1"]
