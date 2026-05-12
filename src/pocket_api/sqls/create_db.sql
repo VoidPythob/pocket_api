@@ -1,4 +1,6 @@
-create database if not exists pocket;
+create database if not exists pocket
+default character set utf8mb4
+default collate utf8mb4_unicode_ci;
 
 use pocket;
 
@@ -30,6 +32,7 @@ create table pet_rance (
     special_defense int comment "特殊防御值",
     speed int comment "速度值",
     total int comment "总计",
+    is_delete tinyint not null default 0 comment "是否删除",
     create_by int not null comment "创建者",
     modified_by int comment "修改者",
     create_at datetime not null comment "创建于",
@@ -48,16 +51,25 @@ create table pet_feature (
 
 create table pet_egg_group (
     `id` int primary key auto_increment comment "蛋组id",
-    `name` varchar(50) comment "蛋组名字",
+    `name` varchar(50) not null comment "蛋组名字",
     create_by int not null comment "创建者",
     modified_by int comment "修改者",
     create_at datetime not null comment "创建于",
     modified_at datetime comment "修改于"
 ) comment "宠物蛋组";
 
+create table pet_generation (
+    `id` int primary key auto_increment comment "世代id",
+    `name` varchar(50) not null comment "世代名称",
+    create_by int not null comment "创建者",
+    modified_by int comment "修改者",
+    create_at datetime not null comment "创建于",
+    modified_at datetime comment "修改于"
+) comment "宠物世代表";
+
 create table pet_capture_method (
     `id` int primary key auto_increment comment "宠物捕获方式id",
-    pet_region_id varchar(100) comment "捕获地点id",
+    pet_region_id int comment "捕获地点id",
     `method` varchar(100) comment "捕获方法",
     detail varchar(20) comment "捕获详细说明",
     create_by int not null comment "创建者",
@@ -71,7 +83,7 @@ create table pet_skill (
     learn_type tinyint comment "学习类型",
     category_id int comment "技能分类id",
     attribute_id int comment "属性id",
-    `name` int comment "技能名称",
+    `name` varchar(100) comment "技能名称",
     introduction varchar(100) comment "技能简介",
     detail varchar(100) comment "技能详细",
     damage int comment "伤害值",
@@ -110,6 +122,21 @@ create table pet_guide (
     create_at datetime not null comment "创建于",
     modified_at datetime comment "修改于"
 ) comment "宠物图鉴";
+
+create table pet_image (
+    `id` int primary key auto_increment comment "宠物图片id",
+    pet_id int not null comment "宠物id",
+    image_url varchar(255) not null comment "图片地址",
+    sort int not null default 0 comment "排序值",
+    is_cover tinyint not null default 0 comment "是否封面",
+    create_by int not null comment "创建者",
+    modified_by int comment "修改者",
+    create_at datetime not null comment "创建于",
+    modified_at datetime comment "修改于",
+    unique key uk_pet_image (pet_id, image_url),
+    index idx_pet_id (pet_id),
+    index idx_cover (pet_id, is_cover)
+) comment "宠物图片表";
 
 create table pet_region (
     `id` int primary key auto_increment comment "宠物地区",
@@ -152,12 +179,22 @@ create table item_category (
     modified_at datetime comment "修改于"
 ) comment "物品分类";
 
+create table tag (
+    `id` int primary key auto_increment comment "标签id",
+    `name` varchar(50) not null unique comment "标签名",
+    `color` varchar(20) comment "标签颜色",
+    create_by int not null comment "创建者",
+    modified_by int comment "修改者",
+    create_at datetime not null comment "创建于",
+    modified_at datetime comment "修改于"
+) comment "标签表";
+
 create table game_docs (
     `id` int primary key auto_increment comment "文档id",
     p_id int comment "文档父id",
     `name` varchar(100) comment "文档名称",
     `path` varchar(100) comment "文档路径",
-    `view` varchar(100) comment "文档页面",
+    `content` text comment "Markdown文档内容",
     create_by int not null comment "创建者",
     modified_by int comment "修改者",
     create_at datetime not null comment "创建于",
@@ -166,8 +203,8 @@ create table game_docs (
 
 create table admin_user (
     `id` int primary key auto_increment comment "管理员用户id",
-    email varchar(50) not null comment "邮箱",
-    `password` varchar(100) not null comment "密码",
+    email varchar(50) not null unique comment "邮箱",
+    `password` varchar(128) not null comment "密码",
     last_login_ip varchar(50) comment "上次登录ip",
     last_login_time datetime comment "上次登录时间",
     last_logout_time datetime comment "上次登出时间",
@@ -203,12 +240,26 @@ create table pets_egg_group (
     index idx_egg_group_id (egg_group_id)
 ) comment '宠物蛋组关联表';
 
+create table pets_pet_generation (
+    pet_id int not null comment '宠物ID',
+    generation_id int not null comment '世代ID',
+    primary key (pet_id, generation_id),
+    index idx_generation_id (generation_id)
+) comment '宠物世代关联表';
+
 create table pets_pet_skill (
     pet_id int not null comment '宠物ID',
     skill_id int not null comment '技能ID',
     primary key (pet_id, skill_id),
     index idx_skill_id (skill_id)
 ) comment '宠物技能关联表';
+
+create table pets_tag (
+    pet_id int not null comment '宠物ID',
+    tag_id int not null comment '标签ID',
+    primary key (pet_id, tag_id),
+    index idx_tag_id (tag_id)
+) comment '宠物标签关联表';
 
 create table pets_pet_guide (
     pet_id int not null comment '宠物ID',
