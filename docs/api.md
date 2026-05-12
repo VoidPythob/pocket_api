@@ -80,6 +80,7 @@
 
 - `generation_id`：世代 ID，必传
 - `feature_id`：特性 ID，可选
+- `tag_id`：标签 ID，可选
 - `name`：宠物中文名，模糊搜索，可选
 - `page`：页码，可选
 
@@ -87,6 +88,7 @@
 
 - 只返回指定世代下的宠物
 - 支持按特性与世代同时筛选
+- 支持按标签与世代同时筛选
 - 支持按中文名模糊搜索
 - 列表项返回：`id`、`name`、`jp_name`、`en_name`、`first_image_url`、`tags`、`features`
 - `tags` 单项包含：`id`、`name`、`color`
@@ -400,6 +402,9 @@
 - `PATCH /admin/rances/{id}/`
 - `DELETE /admin/rances/{id}/`
 
+说明：
+- 列表接口 `GET /admin/rances/` 支持 `page`、`page_size` 分页参数
+
 字段：
 
 - `p_id`
@@ -444,6 +449,9 @@
 - `PATCH /admin/generations/{id}/`
 - `DELETE /admin/generations/{id}/`
 
+说明：
+- 列表接口 `GET /admin/generations/` 支持 `page`、`page_size` 分页参数
+
 字段：
 
 - `name`
@@ -460,6 +468,9 @@
 - `PUT /admin/skills/{id}/`
 - `PATCH /admin/skills/{id}/`
 - `DELETE /admin/skills/{id}/`
+
+说明：
+- 列表接口 `GET /admin/skills/` 支持 `page`、`page_size` 分页参数
 
 字段：
 
@@ -541,6 +552,9 @@
 - `PUT /admin/egg-groups/{id}/`
 - `PATCH /admin/egg-groups/{id}/`
 - `DELETE /admin/egg-groups/{id}/`
+
+说明：
+- 列表接口 `GET /admin/egg-groups/` 支持 `page`、`page_size` 分页参数
 
 字段：
 

@@ -54,6 +54,7 @@ class PetsView(viewsets.ReadOnlyModelViewSet[Pets]):
         query_serializer.is_valid(raise_exception=True)
         generation_id = query_serializer.validated_data["generation_id"]
         feature_id = query_serializer.validated_data.get("feature_id")
+        tag_id = query_serializer.validated_data.get("tag_id")
         name = query_serializer.validated_data.get("name")
 
         pet_ids = PetsPetGeneration.objects.filter(generation_id=generation_id).values_list(
@@ -65,6 +66,11 @@ class PetsView(viewsets.ReadOnlyModelViewSet[Pets]):
                 feature_id=feature_id
             ).values_list("pet_id", flat=True)
             queryset = queryset.filter(id__in=feature_pet_ids)
+        if tag_id:
+            tag_pet_ids = PetsTag.objects.filter(tag_id=tag_id).values_list(
+                "pet_id", flat=True
+            )
+            queryset = queryset.filter(id__in=tag_pet_ids)
         if name:
             queryset = queryset.filter(name__icontains=name)
 

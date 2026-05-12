@@ -6,6 +6,7 @@ from pocket_api.models import Pets
 class PetListQuerySerializer(serializers.Serializer):
     generation_id = serializers.IntegerField(min_value=1, required=True)
     feature_id = serializers.IntegerField(min_value=1, required=False)
+    tag_id = serializers.IntegerField(min_value=1, required=False)
     name = serializers.CharField(required=False, allow_blank=True, max_length=100)
 
     def validate_name(self, value: str) -> str:
