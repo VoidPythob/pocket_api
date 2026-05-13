@@ -2,6 +2,7 @@ from typing import Any
 
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
+from django.middleware.csrf import get_token
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -36,9 +37,15 @@ class AdminLoginView(APIView):
         user.save(update_fields=["last_login_ip", "last_login"])
         user.refresh_from_db(fields=["last_login_ip", "last_login"])
 
-        return Result.success(
+        # 设置csrf token在cookie里面
+        csrf_token = get_token(request)
+
+        result = Result.success(
             data=AdminUserSerializer(user).data, msg="登录成功"
         ).to_response()
+
+        result.set_cookie("csrftoken", csrf_token)
+        return result
 
     @staticmethod
     def _get_client_ip(request: Request) -> str:
