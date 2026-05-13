@@ -21,7 +21,7 @@ from pocket_api.models import (
 class AdminPetCreateSerializer(serializers.Serializer):
     icon_urls = serializers.ListField(
         child=serializers.URLField(max_length=255),
-        allow_empty=False,
+        allow_empty=True,
         write_only=True,
     )
     name = serializers.CharField(max_length=100)
@@ -88,7 +88,9 @@ class AdminPetCreateSerializer(serializers.Serializer):
                 create_by=admin_user.id,
                 create_at=now,
             )
-            self._replace_images(pet_id=pet.id, icon_urls=icon_urls, admin_user_id=admin_user.id, now=now)
+            self._replace_images(
+                pet_id=pet.id, icon_urls=icon_urls, admin_user_id=admin_user.id, now=now
+            )
             self._replace_features(pet_id=pet.id, feature_ids=feature_ids)
             PetsPetGeneration.objects.create(pet_id=pet.id, generation_id=generation_id)
             PetsPetRance.objects.create(pet_id=pet.id, rance_id=rance_id)
@@ -235,7 +237,9 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
             )
         return attrs
 
-    def update(self, instance: Pets, validated_data: dict[str, object]) -> dict[str, object]:
+    def update(
+        self, instance: Pets, validated_data: dict[str, object]
+    ) -> dict[str, object]:
         now = timezone.now()
         admin_user = self.context["admin_user"]
         icon_urls = validated_data.pop("icon_urls", None)
