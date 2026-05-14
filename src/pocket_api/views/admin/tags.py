@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from pocket_api.models import Tag
+from pocket_api.enums import ResponseCode
+from pocket_api.models import PetsTag, Tag
 from pocket_api.result import Result
 from pocket_api.serializers import AdminTagSerializer
 
@@ -34,6 +35,18 @@ class AdminTagView(APIView):
 
     def patch(self, request: Request, *args: Any, **kwargs: Any):
         return self._update(request, *args, **kwargs, partial=True)
+
+    def delete(self, request: Request, *args: Any, **kwargs: Any):
+        tag = get_object_or_404(Tag, pk=kwargs["pk"])
+        if PetsTag.objects.filter(tag_id=tag.id).exists():
+            return Result.from_code(
+                ResponseCode.CONFLICT,
+                msg="tag is referenced by pets",
+            ).to_response()
+
+        data = AdminTagSerializer(tag).data
+        tag.delete()
+        return Result.success(data=data, msg="deleted").to_response()
 
     def _update(
         self, request: Request, *args: Any, partial: bool = False, **kwargs: Any

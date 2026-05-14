@@ -10,11 +10,13 @@ from pocket_api.models import (
     PetImage,
     PetRance,
     PetSkill,
+    PetsTag,
     Pets,
     PetsPetFeature,
     PetsPetGeneration,
     PetsPetRance,
     PetsPetSkill,
+    Tag,
 )
 
 
@@ -39,6 +41,12 @@ class AdminPetCreateSerializer(serializers.Serializer):
         allow_empty=True,
         write_only=True,
     )
+    tag_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=True,
+        write_only=True,
+        required=False,
+    )
 
     def validate_name(self, value: str) -> str:
         if Pets.objects.filter(name=value).exists():
@@ -49,6 +57,7 @@ class AdminPetCreateSerializer(serializers.Serializer):
         attrs["icon_urls"] = list(dict.fromkeys(attrs["icon_urls"]))  # type: ignore[index]
         attrs["feature_ids"] = list(dict.fromkeys(attrs["feature_ids"]))  # type: ignore[index]
         attrs["skill_ids"] = list(dict.fromkeys(attrs["skill_ids"]))  # type: ignore[index]
+        attrs["tag_ids"] = list(dict.fromkeys(attrs.get("tag_ids", [])))  # type: ignore[arg-type]
 
         self._ensure_ids_exist(
             model=PetFeature,
@@ -70,6 +79,11 @@ class AdminPetCreateSerializer(serializers.Serializer):
             ids=[attrs["rance_id"]],  # type: ignore[list-item]
             error_prefix="rance",
         )
+        self._ensure_ids_exist(
+            model=Tag,
+            ids=attrs["tag_ids"],  # type: ignore[arg-type]
+            error_prefix="tag",
+        )
         return attrs
 
     def create(self, validated_data: dict[str, object]) -> dict[str, object]:
@@ -78,6 +92,7 @@ class AdminPetCreateSerializer(serializers.Serializer):
         icon_urls = list(validated_data.pop("icon_urls"))
         feature_ids = list(validated_data.pop("feature_ids"))
         skill_ids = list(validated_data.pop("skill_ids"))
+        tag_ids = list(validated_data.pop("tag_ids", []))
         generation_id = int(validated_data.pop("generation_id"))
         rance_id = int(validated_data.pop("rance_id"))
 
@@ -95,6 +110,7 @@ class AdminPetCreateSerializer(serializers.Serializer):
             PetsPetGeneration.objects.create(pet_id=pet.id, generation_id=generation_id)
             PetsPetRance.objects.create(pet_id=pet.id, rance_id=rance_id)
             self._replace_skills(pet_id=pet.id, skill_ids=skill_ids)
+            self._replace_tags(pet_id=pet.id, tag_ids=tag_ids)
 
         return self.build_pet_payload(pet)
 
@@ -131,6 +147,11 @@ class AdminPetCreateSerializer(serializers.Serializer):
                 PetsPetSkill.objects.filter(pet_id=pet.id)
                 .order_by("skill_id")
                 .values_list("skill_id", flat=True)
+            ),
+            "tag_ids": list(
+                PetsTag.objects.filter(pet_id=pet.id)
+                .order_by("tag_id")
+                .values_list("tag_id", flat=True)
             ),
         }
 
@@ -193,6 +214,16 @@ class AdminPetCreateSerializer(serializers.Serializer):
             [PetsPetSkill(pet_id=pet_id, skill_id=skill_id) for skill_id in skill_ids]
         )
 
+    @staticmethod
+    def _replace_tags(*, pet_id: int, tag_ids: list[int]) -> None:
+        PetsTag.objects.filter(pet_id=pet_id).delete()
+        if not tag_ids:
+            return
+
+        PetsTag.objects.bulk_create(
+            [PetsTag(pet_id=pet_id, tag_id=tag_id) for tag_id in tag_ids]
+        )
+
 
 class AdminPetUpdateSerializer(AdminPetCreateSerializer):
     def validate_name(self, value: str) -> str:
@@ -210,6 +241,8 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
             attrs["feature_ids"] = list(dict.fromkeys(attrs["feature_ids"]))  # type: ignore[index]
         if "skill_ids" in attrs:
             attrs["skill_ids"] = list(dict.fromkeys(attrs["skill_ids"]))  # type: ignore[index]
+        if "tag_ids" in attrs:
+            attrs["tag_ids"] = list(dict.fromkeys(attrs["tag_ids"]))  # type: ignore[index]
 
         if "feature_ids" in attrs:
             self._ensure_ids_exist(
@@ -235,6 +268,12 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
                 ids=[attrs["rance_id"]],  # type: ignore[list-item]
                 error_prefix="rance",
             )
+        if "tag_ids" in attrs:
+            self._ensure_ids_exist(
+                model=Tag,
+                ids=attrs["tag_ids"],  # type: ignore[arg-type]
+                error_prefix="tag",
+            )
         return attrs
 
     def update(
@@ -247,6 +286,7 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
         generation_id = validated_data.pop("generation_id", None)
         rance_id = validated_data.pop("rance_id", None)
         skill_ids = validated_data.pop("skill_ids", None)
+        tag_ids = validated_data.pop("tag_ids", None)
 
         with transaction.atomic():
             update_fields = ["modified_by", "modified_at"]
@@ -287,6 +327,11 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
                 self._replace_skills(
                     pet_id=instance.id,
                     skill_ids=list(skill_ids),
+                )
+            if tag_ids is not None:
+                self._replace_tags(
+                    pet_id=instance.id,
+                    tag_ids=list(tag_ids),
                 )
 
         return self.build_pet_payload(instance)
