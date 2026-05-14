@@ -36,6 +36,7 @@ from pocket_api.views import (
     PetFeaturesView,
     PetsView,
     SkillsView,
+    TagsView,
 )
 
 
@@ -46,6 +47,7 @@ router.register("game-docs", GameDocsView)
 router.register("items", ItemsView)
 router.register("pets", PetsView)
 router.register("skills", SkillsView)
+router.register("tags", TagsView)
 
 urlpatterns = [path("", include(router.urls))]
 urlpatterns += [path("files/<str:file_id>/", FileDownloadView.as_view())]

@@ -33,6 +33,7 @@ from .pets import (
     PetsView,
 )
 from .skills import SkillsView
+from .tags import TagsView
 
 __all__ = [
     "AdminLoginView",
@@ -69,4 +70,5 @@ __all__ = [
     "PetFeaturesView",
     "PetsView",
     "SkillsView",
+    "TagsView",
 ]
