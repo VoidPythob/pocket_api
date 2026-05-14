@@ -91,6 +91,7 @@
 - 支持按特性与世代同时筛选
 - 支持按标签与世代同时筛选
 - 支持按中文名模糊搜索
+- 分页返回包含：`count`、`total_pages`、`next`、`previous`、`results`
 - 列表项返回：`id`、`name`、`jp_name`、`en_name`、`first_image_url`、`tags`、`features`
 - `tags` 单项包含：`id`、`name`、`color`
 
@@ -405,6 +406,7 @@
 
 说明：
 - 列表接口 `GET /admin/rances/` 支持 `page`、`page_size` 分页参数，`page_size` 最大 `100`
+- 分页返回包含：`count`、`total_pages`、`next`、`previous`、`results`
 
 字段：
 
@@ -452,6 +454,7 @@
 
 说明：
 - 列表接口 `GET /admin/generations/` 支持 `page`、`page_size` 分页参数，`page_size` 最大 `100`
+- 分页返回包含：`count`、`total_pages`、`next`、`previous`、`results`
 
 字段：
 
@@ -472,6 +475,7 @@
 
 说明：
 - 列表接口 `GET /admin/skills/` 支持 `page`、`page_size` 分页参数，`page_size` 最大 `100`
+- 分页返回包含：`count`、`total_pages`、`next`、`previous`、`results`
 
 字段：
 
@@ -556,6 +560,7 @@
 
 说明：
 - 列表接口 `GET /admin/egg-groups/` 支持 `page`、`page_size` 分页参数，`page_size` 最大 `100`
+- 分页返回包含：`count`、`total_pages`、`next`、`previous`、`results`
 
 字段：
 

@@ -39,6 +39,7 @@ class GameDocsView(viewsets.ReadOnlyModelViewSet[GameDocs]):
             return Result.success(
                 data={
                     "count": self.paginator.page.paginator.count,
+                    "total_pages": self.paginator.page.paginator.num_pages,
                     "next": self.paginator.get_next_link(),
                     "previous": self.paginator.get_previous_link(),
                     "results": serializer.data,
