@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from pocket_api.views import (
     AdminFileUploadView,
     AdminGameDocsView,
+    AdminItemCategoryRelationView,
     AdminItemCategoryView,
     AdminItemView,
     AdminLoginView,
@@ -58,6 +59,8 @@ urlpatterns += [path("admin/game-docs/", AdminGameDocsView.as_view())]
 urlpatterns += [path("admin/game-docs/<int:pk>/", AdminGameDocsView.as_view())]
 urlpatterns += [path("admin/items/", AdminItemView.as_view())]
 urlpatterns += [path("admin/items/<int:pk>/", AdminItemView.as_view())]
+urlpatterns += [path("admin/items/<int:item_id>/categories/", AdminItemCategoryRelationView.as_view())]
+urlpatterns += [path("admin/items/<int:item_id>/categories/<int:category_id>/", AdminItemCategoryRelationView.as_view())]
 urlpatterns += [path("admin/login/", AdminLoginView.as_view())]
 urlpatterns += [path("admin/logout/", AdminLogoutView.as_view())]
 urlpatterns += [path("admin/register/", AdminRegisterView.as_view())]

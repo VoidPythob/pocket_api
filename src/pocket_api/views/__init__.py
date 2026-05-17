@@ -1,6 +1,7 @@
 from .admin import (
     AdminFileUploadView,
     AdminGameDocsView,
+    AdminItemCategoryRelationView,
     AdminItemCategoryView,
     AdminItemView,
     AdminPetCreateView,
@@ -40,6 +41,7 @@ __all__ = [
     "AdminLogoutView",
     "AdminFileUploadView",
     "AdminGameDocsView",
+    "AdminItemCategoryRelationView",
     "AdminItemCategoryView",
     "AdminItemView",
     "AdminPetCreateView",

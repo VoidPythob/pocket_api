@@ -1,12 +1,16 @@
 from .docs import AdminGameDocsView
 from .egg_groups import AdminPetEggGroupView
+from .feature_views import AdminPetFeatureView
 from .files import AdminFileUploadView
 from .generations import AdminPetGenerationView
-from .items import AdminItemCategoryView, AdminItemView
+from .items import (
+    AdminItemCategoryRelationView,
+    AdminItemCategoryView,
+    AdminItemView,
+)
 from .pets import (
     AdminPetCreateView,
     AdminPetEggGroupRelationView,
-    AdminPetFeatureView,
     AdminPetGenerationRelationView,
     AdminPetRanceRelationView,
 )
@@ -20,6 +24,7 @@ from .tags import AdminTagView
 __all__ = [
     "AdminGameDocsView",
     "AdminFileUploadView",
+    "AdminItemCategoryRelationView",
     "AdminItemCategoryView",
     "AdminItemView",
     "AdminPetCreateView",

@@ -1,5 +1,7 @@
 from .admin import (
     AdminGameDocsSerializer,
+    AdminItemCategoryRelationCreateSerializer,
+    AdminItemCategoryRelationUpdateSerializer,
     AdminItemCategorySerializer,
     AdminItemSerializer,
     AdminLoginSerializer,
@@ -52,6 +54,8 @@ from .pets import (
 __all__ = [
     "AdminLoginSerializer",
     "AdminGameDocsSerializer",
+    "AdminItemCategoryRelationCreateSerializer",
+    "AdminItemCategoryRelationUpdateSerializer",
     "AdminFileUploadSerializer",
     "AdminPokemonCsvImportSerializer",
     "AdminItemCategorySerializer",

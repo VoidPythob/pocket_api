@@ -701,6 +701,24 @@ class AdminItemCategorySerializer(serializers.ModelSerializer[ItemCategory]):
         return instance
 
 
+class AdminItemCategoryRelationCreateSerializer(serializers.Serializer):
+    category_id = serializers.IntegerField(min_value=1)
+
+    def validate_category_id(self, value: int) -> int:
+        if not ItemCategory.objects.filter(id=value).exists():
+            raise serializers.ValidationError("item category not found")
+        return value
+
+
+class AdminItemCategoryRelationUpdateSerializer(serializers.Serializer):
+    new_category_id = serializers.IntegerField(min_value=1)
+
+    def validate_new_category_id(self, value: int) -> int:
+        if not ItemCategory.objects.filter(id=value).exists():
+            raise serializers.ValidationError("item category not found")
+        return value
+
+
 class AdminPetSkillCategorySerializer(serializers.ModelSerializer[PetSkillCategory]):
     class Meta:  # type: ignore
         model = PetSkillCategory

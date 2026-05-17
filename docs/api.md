@@ -338,7 +338,9 @@
   "generation_id": 1,
   "rance_id": 3,
   "skill_ids": [10, 11],
-  "tag_ids": [1, 3]
+  "tag_ids": [1, 3],
+  "egg_group_ids": [2, 5],
+  "gender_male_ratio": 87
 }
 ```
 
@@ -355,14 +357,15 @@
 
 说明：
 
-- 支持修改 `icon_urls`、`name`、`jp_name`、`en_name`、`feature_ids`、`generation_id`、`rance_id`、`skill_ids`、`tag_ids`
+- 支持修改 `icon_urls`、`name`、`jp_name`、`en_name`、`gender_male_ratio`、`feature_ids`、`generation_id`、`rance_id`、`skill_ids`、`tag_ids`、`egg_group_ids`
 - 传入 `icon_urls` 时会整体替换当前宠物图片，第一张仍作为封面
-- 传入 `feature_ids`、`generation_id`、`rance_id`、`skill_ids`、`tag_ids` 时会替换对应关联
+- 传入 `feature_ids`、`generation_id`、`rance_id`、`skill_ids`、`tag_ids`、`egg_group_ids` 时会替换对应关联
 
 说明：
 
-- `icon_urls`、`feature_ids`、`skill_ids`、`tag_ids` 会自动去重
+- `icon_urls`、`feature_ids`、`skill_ids`、`tag_ids`、`egg_group_ids` 会自动去重
 - `generation_id` 为必传
+- `gender_male_ratio` 取值范围为 `0-100`
 - 第一个图片会作为封面
 - 会校验特性、种族、技能、标签是否存在
 
@@ -456,6 +459,9 @@
 - `PUT /admin/features/{id}/`
 - `PATCH /admin/features/{id}/`
 - `DELETE /admin/features/{id}/`
+
+请求参数：
+- `name`：特性名称模糊搜索，可选，仅 `GET /admin/features/` 生效
 
 字段：
 
@@ -563,6 +569,12 @@
 - `PUT /admin/item-categories/{id}/`
 - `PATCH /admin/item-categories/{id}/`
 - `DELETE /admin/item-categories/{id}/`
+- `GET /admin/items/{item_id}/categories/`
+- `POST /admin/items/{item_id}/categories/`
+- `PUT /admin/items/{item_id}/categories/{category_id}/`
+- `DELETE /admin/items/{item_id}/categories/{category_id}/`
+- 新增：`{"category_id": 1}`
+- 替换：`{"new_category_id": 2}`
 
 字段：
 
@@ -690,6 +702,7 @@
 - `GET|POST|PUT|PATCH|DELETE /admin/skill-categories/ /admin/skill-categories/{id}/`
 - `GET|POST|PUT|PATCH|DELETE /admin/items/ /admin/items/{id}/`
 - `GET|POST|PUT|PATCH|DELETE /admin/item-categories/ /admin/item-categories/{id}/`
+- `GET|POST|PUT|DELETE /admin/items/{item_id}/categories/`
 - `GET|POST|PUT|PATCH|DELETE /admin/egg-groups/ /admin/egg-groups/{id}/`
 - `GET|POST|PUT|PATCH|DELETE /admin/game-docs/ /admin/game-docs/{id}/`
 - `POST /admin/files/`

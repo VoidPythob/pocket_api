@@ -5,11 +5,13 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from pocket_api.models import (
+    PetEggGroup,
     PetFeature,
     PetGeneration,
     PetImage,
     PetRance,
     PetSkill,
+    PetsEggGroup,
     PetsTag,
     Pets,
     PetsPetFeature,
@@ -29,6 +31,9 @@ class AdminPetCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     jp_name = serializers.CharField(max_length=100)
     en_name = serializers.CharField(max_length=100)
+    gender_male_ratio = serializers.IntegerField(
+        min_value=0, max_value=100, required=False, allow_null=True
+    )
     feature_ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1),
         allow_empty=True,
@@ -47,6 +52,12 @@ class AdminPetCreateSerializer(serializers.Serializer):
         write_only=True,
         required=False,
     )
+    egg_group_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=True,
+        write_only=True,
+        required=False,
+    )
 
     def validate_name(self, value: str) -> str:
         if Pets.objects.filter(name=value).exists():
@@ -58,6 +69,7 @@ class AdminPetCreateSerializer(serializers.Serializer):
         attrs["feature_ids"] = list(dict.fromkeys(attrs["feature_ids"]))  # type: ignore[index]
         attrs["skill_ids"] = list(dict.fromkeys(attrs["skill_ids"]))  # type: ignore[index]
         attrs["tag_ids"] = list(dict.fromkeys(attrs.get("tag_ids", [])))  # type: ignore[arg-type]
+        attrs["egg_group_ids"] = list(dict.fromkeys(attrs.get("egg_group_ids", [])))  # type: ignore[arg-type]
 
         self._ensure_ids_exist(
             model=PetFeature,
@@ -84,6 +96,11 @@ class AdminPetCreateSerializer(serializers.Serializer):
             ids=attrs["tag_ids"],  # type: ignore[arg-type]
             error_prefix="tag",
         )
+        self._ensure_ids_exist(
+            model=PetEggGroup,
+            ids=attrs["egg_group_ids"],  # type: ignore[arg-type]
+            error_prefix="egg group",
+        )
         return attrs
 
     def create(self, validated_data: dict[str, object]) -> dict[str, object]:
@@ -93,6 +110,7 @@ class AdminPetCreateSerializer(serializers.Serializer):
         feature_ids = list(validated_data.pop("feature_ids"))
         skill_ids = list(validated_data.pop("skill_ids"))
         tag_ids = list(validated_data.pop("tag_ids", []))
+        egg_group_ids = list(validated_data.pop("egg_group_ids", []))
         generation_id = int(validated_data.pop("generation_id"))
         rance_id = int(validated_data.pop("rance_id"))
 
@@ -111,6 +129,7 @@ class AdminPetCreateSerializer(serializers.Serializer):
             PetsPetRance.objects.create(pet_id=pet.id, rance_id=rance_id)
             self._replace_skills(pet_id=pet.id, skill_ids=skill_ids)
             self._replace_tags(pet_id=pet.id, tag_ids=tag_ids)
+            self._replace_egg_groups(pet_id=pet.id, egg_group_ids=egg_group_ids)
 
         return self.build_pet_payload(pet)
 
@@ -131,6 +150,7 @@ class AdminPetCreateSerializer(serializers.Serializer):
             "name": pet.name,
             "jp_name": pet.jp_name,
             "en_name": pet.en_name,
+            "gender_male_ratio": pet.gender_male_ratio,
             "icon_urls": list(
                 PetImage.objects.filter(pet_id=pet.id)
                 .order_by("sort", "image_url")
@@ -152,6 +172,11 @@ class AdminPetCreateSerializer(serializers.Serializer):
                 PetsTag.objects.filter(pet_id=pet.id)
                 .order_by("tag_id")
                 .values_list("tag_id", flat=True)
+            ),
+            "egg_group_ids": list(
+                PetsEggGroup.objects.filter(pet_id=pet.id)
+                .order_by("egg_group_id")
+                .values_list("egg_group_id", flat=True)
             ),
         }
 
@@ -224,6 +249,19 @@ class AdminPetCreateSerializer(serializers.Serializer):
             [PetsTag(pet_id=pet_id, tag_id=tag_id) for tag_id in tag_ids]
         )
 
+    @staticmethod
+    def _replace_egg_groups(*, pet_id: int, egg_group_ids: list[int]) -> None:
+        PetsEggGroup.objects.filter(pet_id=pet_id).delete()
+        if not egg_group_ids:
+            return
+
+        PetsEggGroup.objects.bulk_create(
+            [
+                PetsEggGroup(pet_id=pet_id, egg_group_id=egg_group_id)
+                for egg_group_id in egg_group_ids
+            ]
+        )
+
 
 class AdminPetUpdateSerializer(AdminPetCreateSerializer):
     def validate_name(self, value: str) -> str:
@@ -243,6 +281,8 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
             attrs["skill_ids"] = list(dict.fromkeys(attrs["skill_ids"]))  # type: ignore[index]
         if "tag_ids" in attrs:
             attrs["tag_ids"] = list(dict.fromkeys(attrs["tag_ids"]))  # type: ignore[index]
+        if "egg_group_ids" in attrs:
+            attrs["egg_group_ids"] = list(dict.fromkeys(attrs["egg_group_ids"]))  # type: ignore[index]
 
         if "feature_ids" in attrs:
             self._ensure_ids_exist(
@@ -274,6 +314,12 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
                 ids=attrs["tag_ids"],  # type: ignore[arg-type]
                 error_prefix="tag",
             )
+        if "egg_group_ids" in attrs:
+            self._ensure_ids_exist(
+                model=PetEggGroup,
+                ids=attrs["egg_group_ids"],  # type: ignore[arg-type]
+                error_prefix="egg group",
+            )
         return attrs
 
     def update(
@@ -287,10 +333,11 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
         rance_id = validated_data.pop("rance_id", None)
         skill_ids = validated_data.pop("skill_ids", None)
         tag_ids = validated_data.pop("tag_ids", None)
+        egg_group_ids = validated_data.pop("egg_group_ids", None)
 
         with transaction.atomic():
             update_fields = ["modified_by", "modified_at"]
-            for field in ("name", "jp_name", "en_name"):
+            for field in ("name", "jp_name", "en_name", "gender_male_ratio"):
                 if field in validated_data:
                     setattr(instance, field, validated_data[field])
                     update_fields.append(field)
@@ -332,6 +379,11 @@ class AdminPetUpdateSerializer(AdminPetCreateSerializer):
                 self._replace_tags(
                     pet_id=instance.id,
                     tag_ids=list(tag_ids),
+                )
+            if egg_group_ids is not None:
+                self._replace_egg_groups(
+                    pet_id=instance.id,
+                    egg_group_ids=list(egg_group_ids),
                 )
 
         return self.build_pet_payload(instance)
