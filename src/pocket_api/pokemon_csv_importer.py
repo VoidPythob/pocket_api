@@ -61,6 +61,31 @@ GENERATION_NAME_MAP = {
 
 LEGENDARY_TAG_NAME = "\u4f20\u8bf4"
 LEGENDARY_TAG_COLOR = "#f59e0b"
+MALE_RATIO_FIELD_NAMES = (
+    "percentage_male",
+    "gender_male_ratio",
+    "male_ratio",
+    "male_percent",
+    "male_percentage",
+    "\u96c4\u6027\u6bd4\u4f8b",
+    "\u96c4\u6027\u5360\u6bd4",
+)
+FEMALE_RATIO_FIELD_NAMES = (
+    "percentage_female",
+    "gender_female_ratio",
+    "female_ratio",
+    "female_percent",
+    "female_percentage",
+    "\u96cc\u6027\u6bd4\u4f8b",
+    "\u96cc\u6027\u5360\u6bd4",
+)
+GENDER_RATIO_PAIR_FIELD_NAMES = (
+    "gender_ratio",
+    "gender_ratio_display",
+    "sex_ratio",
+    "\u6027\u522b\u6bd4",
+    "\u96cc\u96c4\u6bd4\u4f8b",
+)
 
 
 def load_builtin_pokemon_csv_rows() -> list[dict[str, str]]:
@@ -442,9 +467,7 @@ class PokemonCsvImporter:
                 row_number,
             ),
             "weight": self._parse_weight(row.get("weight_kg"), row_number),
-            "gender_male_ratio": self._parse_optional_percent(
-                row.get("percentage_male")
-            ),
+            "gender_male_ratio": self._parse_gender_male_ratio(row),
             "capture_probability": self._parse_optional_int(row.get("capture_rate")),
             "egg_hatching_steps": self._parse_optional_int(row.get("base_egg_steps")),
             "classification": self._clean_text(row.get("classfication")) or "",
@@ -514,10 +537,62 @@ class PokemonCsvImporter:
         if cleaned is None:
             return None
 
-        try:
-            return int(float(cleaned))
-        except ValueError:
+        match = re.search(r"\d+(?:\.\d+)?", cleaned)
+        if match is None:
             return None
+        parsed = float(match.group(0))
+        parsed = max(0.0, min(100.0, parsed))
+        return int(parsed)
+
+    @classmethod
+    def _parse_gender_male_ratio(cls, row: dict[str, str]) -> int | None:
+        for field_name in MALE_RATIO_FIELD_NAMES:
+            parsed = cls._parse_optional_percent(row.get(field_name))
+            if parsed is not None:
+                return parsed
+
+        for field_name in FEMALE_RATIO_FIELD_NAMES:
+            parsed = cls._parse_optional_percent(row.get(field_name))
+            if parsed is not None:
+                return max(0, 100 - parsed)
+
+        for field_name in GENDER_RATIO_PAIR_FIELD_NAMES:
+            parsed = cls._parse_gender_ratio_pair(row.get(field_name))
+            if parsed is not None:
+                return parsed
+
+        return None
+
+    @classmethod
+    def _parse_gender_ratio_pair(cls, value: str | None) -> int | None:
+        cleaned = cls._clean_text(value)
+        if cleaned is None:
+            return None
+
+        female_match = re.search(
+            r"(?:female|woman|\{woman\}|\u96cc)[^\d]*(\d+(?:\.\d+)?)",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
+        male_match = re.search(
+            r"(?:male|man|\{man\}|\u96c4)[^\d]*(\d+(?:\.\d+)?)",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
+        if male_match is not None:
+            return cls._parse_optional_percent(male_match.group(1))
+        if female_match is not None:
+            female_ratio = cls._parse_optional_percent(female_match.group(1))
+            if female_ratio is None:
+                return None
+            return max(0, 100 - female_ratio)
+
+        numbers = re.findall(r"\d+(?:\.\d+)?", cleaned)
+        if len(numbers) >= 2:
+            return cls._parse_optional_percent(numbers[1])
+        if len(numbers) == 1:
+            return cls._parse_optional_percent(numbers[0])
+        return None
 
     @staticmethod
     def _parse_weight(value: str | None, row_number: int) -> int:
